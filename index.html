@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CPS 230/234 → FS AI RMF Crosswalk</title>
+<style>
+:root{--bg:#0a0a0f;--s1:#12121a;--s2:#1a1a26;--bd:#2a2a3a;--tx:#e8e8f0;--dim:#8888a0;--acc:#6366f1;--acc2:#818cf8;--glow:rgba(99,102,241,.15);--grn:#22c55e;--amb:#f59e0b;--red:#ef4444;--cyn:#06b6d4}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--tx);line-height:1.6}
+.ctr{max-width:1100px;margin:0 auto;padding:0 20px}
+header{background:linear-gradient(135deg,#0f0f1a,#1a1030,#0f0f1a);border-bottom:1px solid var(--bd);padding:40px 0 30px}
+header .badge{display:inline-block;background:var(--glow);border:1px solid var(--acc);color:var(--acc2);padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:12px;letter-spacing:.5px}
+header h1{font-size:26px;font-weight:700;background:linear-gradient(135deg,#e8e8f0,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
+header p{color:var(--dim);font-size:14px;max-width:700px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin:24px 0}
+.stat{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:16px;text-align:center}
+.stat .n{font-size:28px;font-weight:700}
+.stat .l{font-size:11px;color:var(--dim);margin-top:4px}
+.n-grn{color:var(--grn)}.n-amb{color:var(--amb)}.n-red{color:var(--red)}.n-acc{color:var(--acc2)}.n-cyn{color:var(--cyn)}
+nav{background:var(--s1);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:100}
+nav .tabs{display:flex;overflow-x:auto}
+nav .tab{padding:14px 24px;cursor:pointer;color:var(--dim);font-size:14px;font-weight:500;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap}
+nav .tab:hover{color:var(--tx);background:var(--s2)}
+nav .tab.active{color:var(--acc2);border-bottom-color:var(--acc)}
+section{padding:24px 0;display:none}section.active{display:block}
+.filter-bar{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+.filter-bar select,.filter-bar input{background:var(--s1);border:1px solid var(--bd);border-radius:8px;color:var(--tx);padding:8px 12px;font-size:13px;outline:none}
+.filter-bar select:focus,.filter-bar input:focus{border-color:var(--acc)}
+.filter-bar input{flex:1;min-width:200px}
+.count{font-size:13px;color:var(--dim);margin-bottom:16px}
+.row{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:16px 20px;margin-bottom:10px;cursor:pointer;transition:border-color .2s}
+.row:hover{border-color:var(--acc)}
+.row-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.fn-badge{padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;color:#fff}
+.fn-GV{background:#6366f1}.fn-MP{background:#06b6d4}.fn-MS{background:#f59e0b;color:#000}.fn-MG{background:#22c55e;color:#000}
+.sub-id{font-size:12px;font-weight:600;color:var(--acc2);min-width:60px}
+.sub-name{font-size:14px;font-weight:500;flex:1}
+.strength{padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;white-space:nowrap}
+.s-direct{background:rgba(34,197,94,.15);color:var(--grn);border:1px solid rgba(34,197,94,.3)}
+.s-partial{background:rgba(245,158,11,.15);color:var(--amb);border:1px solid rgba(245,158,11,.3)}
+.s-gap{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+.cos-badge{font-size:11px;color:var(--dim);white-space:nowrap}
+.row-detail{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--bd)}
+.row.open .row-detail{display:block}
+.detail-label{font-size:11px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.detail-value{font-size:13px;margin-bottom:10px}
+.cps-ref{display:inline-block;background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:2px 8px;font-size:12px;font-weight:500;margin-right:4px;margin-bottom:4px}
+/* Donut */
+.donut-wrap{display:flex;gap:24px;flex-wrap:wrap;justify-content:center;margin:24px 0}
+.donut-card{background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:20px;text-align:center;min-width:180px}
+.donut-card h3{font-size:14px;margin-bottom:12px}
+.donut{position:relative;width:120px;height:120px;margin:0 auto}
+.donut svg{transform:rotate(-90deg)}
+.donut-label{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:20px;font-weight:700}
+.legend{display:flex;gap:16px;justify-content:center;margin-top:12px;font-size:12px}
+.legend span{display:flex;align-items:center;gap:4px}
+.legend .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+/* Gap cards */
+.gap-card{background:var(--s1);border:1px solid var(--bd);border-left:3px solid var(--red);border-radius:10px;padding:16px 20px;margin-bottom:12px}
+.gap-card h3{font-size:15px;color:var(--red);margin-bottom:4px}
+.gap-card p{font-size:13px;color:var(--dim)}
+.gap-subs{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.gap-sub{font-size:11px;background:var(--s2);border:1px solid var(--bd);border-radius:4px;padding:1px 6px;color:var(--dim)}
+/* Chart bars */
+.bar-chart{margin:24px 0}
+.bar-row{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.bar-label{width:100px;font-size:13px;font-weight:600;text-align:right}
+.bar-track{flex:1;height:28px;background:var(--s2);border-radius:6px;overflow:hidden;display:flex}
+.bar-seg{height:100%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;transition:width .5s}
+.bar-direct{background:var(--grn)}.bar-partial{background:var(--amb);color:#000}.bar-gap{background:var(--red)}
+footer{border-top:1px solid var(--bd);padding:20px 0;margin-top:40px;text-align:center}
+footer p{font-size:12px;color:var(--dim)}
+footer a{color:var(--acc2);text-decoration:none}
+@media(max-width:640px){header h1{font-size:20px}.stats{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<header><div class="ctr">
+<div class="badge">🔗 ORIGINAL RESEARCH · FEBRUARY 2026</div>
+<h1>CPS 230/234 → FS AI RMF Crosswalk</h1>
+<p>How Australia's APRA prudential standards map to the US Treasury Financial Services AI Risk Management Framework. 62 subcategories, 230 control objectives analyzed.</p>
+</div></header>
+<nav><div class="ctr"><div class="tabs">
+<div class="tab active" data-tab="overview">Overview</div>
+<div class="tab" data-tab="matrix">Full Matrix</div>
+<div class="tab" data-tab="gaps">Gap Analysis</div>
+<div class="tab" data-tab="sources">Sources</div>
+</div></div></nav>
+<main class="ctr">
+
+<section id="overview" class="active">
+<div class="stats">
+<div class="stat"><div class="n n-acc">230</div><div class="l">Control Objectives</div></div>
+<div class="stat"><div class="n n-cyn">62</div><div class="l">Subcategories</div></div>
+<div class="stat"><div class="n n-grn">24</div><div class="l">Direct Mappings ●</div></div>
+<div class="stat"><div class="n n-amb">27</div><div class="l">Partial Mappings ◐</div></div>
+<div class="stat"><div class="n n-red">21</div><div class="l">Gaps ○</div></div>
+<div class="stat"><div class="n n-grn">76%</div><div class="l">CPS Coverage</div></div>
+</div>
+
+<div class="bar-chart" id="fn-bars"></div>
+
+<div class="legend" style="margin:20px 0">
+<span><span class="dot" style="background:var(--grn)"></span> Direct — same risk addressed</span>
+<span><span class="dot" style="background:var(--amb)"></span> Partial — overlap but scope differs</span>
+<span><span class="dot" style="background:var(--red)"></span> Gap — no CPS equivalent</span>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px">
+<div style="background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:20px">
+<h3 style="font-size:15px;margin-bottom:12px;color:var(--grn)">✅ Strongest Alignment</h3>
+<ul style="list-style:none;font-size:13px;color:var(--dim)">
+<li style="padding:4px 0;border-bottom:1px solid var(--bd)"><strong style="color:var(--tx)">Third-Party Risk</strong> — CPS 230's service provider regime maps directly</li>
+<li style="padding:4px 0;border-bottom:1px solid var(--bd)"><strong style="color:var(--tx)">Incident Response</strong> — CPS 230 72-hour notification + CPS 234 incident lifecycle</li>
+<li style="padding:4px 0;border-bottom:1px solid var(--bd)"><strong style="color:var(--tx)">Board Accountability</strong> — Both frameworks: ultimate responsibility at Board level</li>
+<li style="padding:4px 0"><strong style="color:var(--tx)">Security & Resilience</strong> — CPS 234 capability + CPS 230 business continuity</li>
+</ul>
+</div>
+<div style="background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:20px">
+<h3 style="font-size:15px;margin-bottom:12px;color:var(--red)">⚠️ Biggest Gaps</h3>
+<ul style="list-style:none;font-size:13px;color:var(--dim)">
+<li style="padding:4px 0;border-bottom:1px solid var(--bd)"><strong style="color:var(--tx)">AI Fairness & Bias</strong> — No CPS equivalent for bias testing or nondiscrimination</li>
+<li style="padding:4px 0;border-bottom:1px solid var(--bd)"><strong style="color:var(--tx)">Explainability</strong> — Model interpretability metrics outside CPS scope</li>
+<li style="padding:4px 0;border-bottom:1px solid var(--bd)"><strong style="color:var(--tx)">Human-AI Oversight</strong> — Human-in-the-loop, appeal/override mechanisms</li>
+<li style="padding:4px 0"><strong style="color:var(--tx)">Stakeholder Engagement</strong> — External feedback on AI impacts not required</li>
+</ul>
+</div>
+</div>
+
+<div style="background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:20px;margin-top:16px">
+<h3 style="font-size:15px;margin-bottom:8px">💡 Key Insight</h3>
+<p style="font-size:14px;color:var(--dim)">APRA-regulated entities already compliant with CPS 230/234 have a <strong style="color:var(--grn)">76% head start</strong> on the FS AI RMF. The 24% gap represents genuinely new AI governance capabilities — fairness, explainability, human oversight, and stakeholder engagement — that no existing Australian prudential standard covers. The <strong style="color:var(--tx)">MANAGE function</strong> has the best coverage (91%) while <strong style="color:var(--tx)">MAP</strong> has the weakest (69% gap + partial).</p>
+</div>
+</section>
+
+<section id="matrix">
+<div class="filter-bar">
+<select id="f-fn"><option value="">All Functions</option></select>
+<select id="f-str"><option value="">All Strengths</option><option value="direct">● Direct</option><option value="partial">◐ Partial</option><option value="gap">○ Gap</option></select>
+<select id="f-cps"><option value="">All CPS References</option><option value="230">CPS 230 only</option><option value="234">CPS 234 only</option><option value="both">Both CPS 230 & 234</option></select>
+<input type="text" id="f-search" placeholder="Search subcategories...">
+</div>
+<div class="count" id="matrix-count"></div>
+<div id="matrix-rows"></div>
+</section>
+
+<section id="gaps">
+<h2 style="font-size:20px;margin-bottom:8px">Gap Analysis — New Ground for APRA-Regulated Entities</h2>
+<p style="color:var(--dim);font-size:14px;margin-bottom:20px">These 7 areas represent AI governance capabilities that CPS 230/234 were not designed to address. Entities will need to build these capabilities beyond current prudential compliance.</p>
+<div id="gap-cards"></div>
+
+<div style="background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:20px;margin-top:24px">
+<h3 style="font-size:15px;margin-bottom:12px">Strategic Implications</h3>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;font-size:13px;color:var(--dim)">
+<div><strong style="color:var(--tx);display:block;margin-bottom:4px">For Regulated Entities</strong>Current CPS compliance = 76% foundation. Invest in AI fairness, explainability, and stakeholder engagement to close the gap.</div>
+<div><strong style="color:var(--tx);display:block;margin-bottom:4px">For Regulators</strong>The FS AI RMF validates sector-specific AI frameworks. Its common lexicon and adoption stage model could inform Australian equivalents.</div>
+<div><strong style="color:var(--tx);display:block;margin-bottom:4px">For the Industry</strong>Build AI risk programs that satisfy both APRA and FS AI RMF simultaneously. The crosswalk shows exactly where to invest.</div>
+</div>
+</div>
+</section>
+
+<section id="sources">
+<h2 style="font-size:20px;margin-bottom:16px">Sources & Methodology</h2>
+<div style="background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:20px;margin-bottom:16px">
+<h3 style="font-size:15px;margin-bottom:8px">Methodology</h3>
+<p style="font-size:13px;color:var(--dim)">Each of the 62 FS AI RMF subcategories was mapped against both CPS 230 (Operational Risk Management, effective 1 July 2025) and CPS 234 (Information Security, effective 1 July 2019) using paragraph-level analysis. Mappings were classified as Direct (●) where requirements address substantively the same risk, Partial (◐) where overlap exists but scope differs, or Gap (○) where no current CPS equivalent exists.</p>
+</div>
+<div style="background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:20px;margin-bottom:16px">
+<h3 style="font-size:15px;margin-bottom:12px">📄 Framework Documents</h3>
+<ul style="list-style:none">
+<li style="padding:8px 0;border-bottom:1px solid var(--bd)"><a href="https://handbook.apra.gov.au/standard/cps-230" style="color:var(--acc2);text-decoration:none">CPS 230 Operational Risk Management — APRA Handbook</a></li>
+<li style="padding:8px 0;border-bottom:1px solid var(--bd)"><a href="https://handbook.apra.gov.au/standard/cps-234" style="color:var(--acc2);text-decoration:none">CPS 234 Information Security — APRA Handbook</a></li>
+<li style="padding:8px 0;border-bottom:1px solid var(--bd)"><a href="https://fsscc.org/AIEOG-AI-deliverables/" style="color:var(--acc2);text-decoration:none">FS AI RMF — FSSCC AIEOG Deliverables</a></li>
+<li style="padding:8px 0;border-bottom:1px solid var(--bd)"><a href="https://cyberriskinstitute.org/artificial-intelligence-risk-management/" style="color:var(--acc2);text-decoration:none">FS AI RMF — Cyber Risk Institute Portal</a></li>
+<li style="padding:8px 0"><a href="https://9to5ai.github.io/fs-ai-rmf-explorer/" style="color:var(--acc2);text-decoration:none">Interactive FS AI RMF Explorer (companion tool)</a></li>
+</ul>
+</div>
+<div style="background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:20px">
+<p style="font-size:12px;color:var(--dim)">This crosswalk is original independent research and does not represent the views of APRA, the US Treasury, CRI, FSSCC, or any regulated entity. For authoritative guidance, refer to the source documents.</p>
+</div>
+</section>
+
+</main>
+<footer><div class="ctr">
+<p>Built by <a href="https://www.linkedin.com/in/momofan/" target="_blank">Momo Fan</a> · <a href="https://9to5ai.github.io/fs-ai-rmf-explorer/" target="_blank">FS AI RMF Explorer</a> · Data sourced from <a href="https://handbook.apra.gov.au/" target="_blank">APRA</a> & <a href="https://fsscc.org/AIEOG-AI-deliverables/" target="_blank">FSSCC</a></p>
+</div></footer>
+<script>
+const DATA = {"functions": [{"id": "GV", "name": "GOVERN", "desc": "Policies, Accountability & Oversight", "color": "#6366f1"}, {"id": "MP", "name": "MAP", "desc": "Context, Risk Identification & Use Cases", "color": "#06b6d4"}, {"id": "MS", "name": "MEASURE", "desc": "Testing, Monitoring & Evaluation", "color": "#f59e0b"}, {"id": "MG", "name": "MANAGE", "desc": "Risk Treatment, Response & Improvement", "color": "#22c55e"}], "mappings": [{"fn": "GV", "sub": "GV-1.1", "name": "Legal and Regulatory Compliance", "cos": 6, "strength": "direct", "cps": "CPS 230 \u00b614, \u00b624-25", "notes": "CPS 230 requires managing compliance risk explicitly. FS AI RMF extends to AI-specific legal requirements (IP, data protection, algorithmic accountability)"}, {"fn": "GV", "sub": "GV-1.2", "name": "Defining Trustworthy AI Policies", "cos": 6, "strength": "partial", "cps": "CPS 230 \u00b616", "notes": "CPS 230 requires a risk management framework but doesn't prescribe AI trustworthiness principles (fairness, explainability). New territory."}, {"fn": "GV", "sub": "GV-1.3", "name": "Establishing Risk Management Processes", "cos": 4, "strength": "direct", "cps": "CPS 230 \u00b616, \u00b626-27", "notes": "Strong alignment. CPS 230's risk appetite, indicators, limits, and tolerance levels map directly."}, {"fn": "GV", "sub": "GV-1.4", "name": "Establishing Transparency and Documentation", "cos": 3, "strength": "partial", "cps": "CPS 230 \u00b616(d)", "notes": "CPS 230 requires monitoring and reporting but doesn't mandate AI-specific transparency or documentation of model decisions."}, {"fn": "GV", "sub": "GV-1.5", "name": "Establishing Monitoring and Review", "cos": 4, "strength": "direct", "cps": "CPS 230 \u00b617, \u00b616(d)", "notes": "CPS 230 mandates regular review of operational risk management. FS AI RMF adds AI-specific monitoring cadence."}, {"fn": "GV", "sub": "GV-1.6", "name": "Building the AI Inventory", "cos": 6, "strength": "partial", "cps": "CPS 230 \u00b627(b)", "notes": "CPS 230 requires documenting processes and resources for critical operations. FS AI RMF requires a dedicated AI system inventory - more specific."}, {"fn": "GV", "sub": "GV-1.7", "name": "Establishing Decommissioning Processes", "cos": 1, "strength": "gap", "cps": "\u2014", "notes": "No CPS 230/234 equivalent for AI system decommissioning."}, {"fn": "GV", "sub": "GV-2.1", "name": "Establishing Roles and Responsibilities", "cos": 4, "strength": "direct", "cps": "CPS 230 \u00b620-21, CPS 234 \u00b614", "notes": "Strong alignment. Both frameworks require clear accountability structures from Board down."}, {"fn": "GV", "sub": "GV-2.2", "name": "Training for AI Risk Management", "cos": 4, "strength": "partial", "cps": "CPS 234 \u00b619", "notes": "CPS 234 requires information security awareness. FS AI RMF extends to AI-specific risk management training."}, {"fn": "GV", "sub": "GV-2.3", "name": "Accountability of Executive Leadership", "cos": 4, "strength": "direct", "cps": "CPS 230 \u00b620-22, CPS 234 \u00b613", "notes": "Both frameworks place ultimate accountability at Board level."}, {"fn": "GV", "sub": "GV-3.1", "name": "Bolstering Broad Perspectives", "cos": 1, "strength": "gap", "cps": "\u2014", "notes": "CPS 230/234 don't address workforce diversity for risk management."}, {"fn": "GV", "sub": "GV-3.2", "name": "Defining Human-AI Configurations", "cos": 2, "strength": "gap", "cps": "\u2014", "notes": "No CPS equivalent for human-AI interaction design and oversight configurations."}, {"fn": "GV", "sub": "GV-4.1", "name": "Establishing a Risk-Aware Culture", "cos": 3, "strength": "partial", "cps": "CPS 230 \u00b614(a), \u00b616(a)", "notes": "CPS 230 requires governance and risk management but doesn't prescribe 'safety-first mindset' for AI specifically."}, {"fn": "GV", "sub": "GV-4.2", "name": "Documenting AI System Impact", "cos": 4, "strength": "direct", "cps": "CPS 230 \u00b626", "notes": "CPS 230 \u00b626 explicitly requires assessing impact of new products, services, and technologies on operational risk profile."}, {"fn": "GV", "sub": "GV-4.3", "name": "AI Incident Response and Information Sharing", "cos": 6, "strength": "direct", "cps": "CPS 230 \u00b631-32, CPS 234 \u00b624-28", "notes": "Strong alignment. CPS 230 mandates 72-hour APRA notification. CPS 234 has comprehensive incident management."}, {"fn": "GV", "sub": "GV-5.1", "name": "Creating Stakeholder Engagement", "cos": 3, "strength": "gap", "cps": "\u2014", "notes": "CPS 230/234 don't require external stakeholder feedback on technology risk."}, {"fn": "GV", "sub": "GV-5.2", "name": "Ensuring Continual Stakeholder Engagement", "cos": 5, "strength": "gap", "cps": "\u2014", "notes": "APRA's supervisory model relies on entity self-assessment, not stakeholder engagement."}, {"fn": "GV", "sub": "GV-6.1", "name": "Third-Party Risk Management Processes", "cos": 11, "strength": "direct", "cps": "CPS 230 \u00b615, \u00b616(f), \u00b633-46", "notes": "Strongest alignment in the entire framework. CPS 230's service provider regime is comprehensive. FS AI RMF adds AI-specific concerns."}, {"fn": "GV", "sub": "GV-6.2", "name": "Contingency Plans for Critical Third Parties", "cos": 4, "strength": "direct", "cps": "CPS 230 \u00b640-41, \u00b643-46", "notes": "CPS 230 explicitly requires substitutability planning for material service providers."}, {"fn": "MP", "sub": "MP-1.1", "name": "Defining the Operating Context", "cos": 4, "strength": "partial", "cps": "CPS 230 \u00b626", "notes": "CPS 230 requires assessing new technologies but not documenting intended purposes and societal impacts of AI."}, {"fn": "MP", "sub": "MP-1.2", "name": "Cross-Functional Perspectives", "cos": 1, "strength": "gap", "cps": "\u2014", "notes": "No CPS equivalent for interdisciplinary team composition in technology risk assessment."}, {"fn": "MP", "sub": "MP-1.3", "name": "Defining Mission and Goals", "cos": 2, "strength": "partial", "cps": "CPS 230 \u00b626", "notes": "CPS 230 connects operational risk to strategic planning but doesn't require AI mission documentation."}, {"fn": "MP", "sub": "MP-1.4", "name": "Defining Real-World Business Value", "cos": 1, "strength": "partial", "cps": "CPS 230 \u00b626", "notes": "Implicit in CPS 230's requirement to assess business decisions against risk profile."}, {"fn": "MP", "sub": "MP-1.5", "name": "Documenting Risk Tolerances", "cos": 2, "strength": "direct", "cps": "CPS 230 \u00b616(b)", "notes": "CPS 230 explicitly requires defined risk appetite with tolerance levels."}, {"fn": "MP", "sub": "MP-1.6", "name": "Defining User Requirements", "cos": 3, "strength": "gap", "cps": "\u2014", "notes": "CPS 230/234 don't address user-centric design requirements for AI systems."}, {"fn": "MP", "sub": "MP-2.1", "name": "AI System Task and Methodology", "cos": 3, "strength": "gap", "cps": "\u2014", "notes": "No CPS equivalent for documenting AI model types and methodologies."}, {"fn": "MP", "sub": "MP-2.2", "name": "AI System Utility and Oversight Needs", "cos": 2, "strength": "gap", "cps": "\u2014", "notes": "AI-specific: knowledge limits, human oversight documentation."}, {"fn": "MP", "sub": "MP-2.3", "name": "Applying Scientific Methodologies", "cos": 6, "strength": "partial", "cps": "CPS 234 \u00b629-32", "notes": "CPS 234 requires systematic testing but not AI-specific scientific methodology (TEVV, construct validation)."}, {"fn": "MP", "sub": "MP-3.1", "name": "Understanding Benefits", "cos": 3, "strength": "gap", "cps": "\u2014", "notes": "CPS standards are risk-focused, don't require documentation of technology benefits."}, {"fn": "MP", "sub": "MP-3.2", "name": "Understanding Costs and Benefits", "cos": 2, "strength": "partial", "cps": "CPS 230 \u00b626", "notes": "CPS 230 focuses on risk impact, not cost-benefit analysis of AI."}, {"fn": "MP", "sub": "MP-3.3", "name": "Documenting Application Scope", "cos": 1, "strength": "gap", "cps": "\u2014", "notes": "AI-specific scoping not addressed in CPS standards."}, {"fn": "MP", "sub": "MP-3.4", "name": "Defining Operator Proficiency", "cos": 3, "strength": "partial", "cps": "CPS 234 \u00b631", "notes": "CPS 234 requires skilled testing specialists. FS AI RMF extends to all AI operators."}, {"fn": "MP", "sub": "MP-3.5", "name": "Establishing Human Oversight", "cos": 4, "strength": "gap", "cps": "\u2014", "notes": "Human-in-the-loop requirements have no CPS equivalent."}, {"fn": "MP", "sub": "MP-4.1", "name": "Risk of AI System Components", "cos": 3, "strength": "partial", "cps": "CPS 230 \u00b633-46, CPS 234 \u00b616-17", "notes": "CPS standards address third-party risk generally but not AI component-specific risks."}, {"fn": "MP", "sub": "MP-4.2", "name": "Risk Controls for AI System Components", "cos": 2, "strength": "partial", "cps": "CPS 230 \u00b629-30, CPS 234 \u00b622-23", "notes": "Control requirements exist but aren't tailored to AI components."}, {"fn": "MP", "sub": "MP-5.1", "name": "Identifying Risk Likelihood and Impacts", "cos": 3, "strength": "direct", "cps": "CPS 230 \u00b627(c)", "notes": "CPS 230's scenario analysis requirement maps well to AI impact assessment."}, {"fn": "MP", "sub": "MP-5.2", "name": "Collecting Feedback on AI Impacts", "cos": 2, "strength": "gap", "cps": "\u2014", "notes": "External feedback collection not required by CPS standards."}, {"fn": "MS", "sub": "MS-1.1", "name": "Selecting and Prioritizing Measurements", "cos": 2, "strength": "partial", "cps": "CPS 230 \u00b616(b), CPS 234 \u00b627", "notes": "Both CPS standards require risk-proportionate measurement but not AI-specific metrics selection."}, {"fn": "MS", "sub": "MS-1.2", "name": "Continuously Improving Measurement", "cos": 1, "strength": "direct", "cps": "CPS 230 \u00b617", "notes": "CPS 230's review cycle maps to continuous measurement improvement."}, {"fn": "MS", "sub": "MS-1.3", "name": "External Assessment of Measurement", "cos": 1, "strength": "direct", "cps": "CPS 230 \u00b619, CPS 234 \u00b631, \u00b633-34", "notes": "Strong alignment. CPS 234 explicitly requires functionally independent testing specialists and internal audit assurance."}, {"fn": "MS", "sub": "MS-2.1", "name": "Documenting Measurement Approaches", "cos": 3, "strength": "partial", "cps": "CPS 234 \u00b629-30", "notes": "CPS 234 requires testing documentation but not AI-specific TEVV documentation."}, {"fn": "MS", "sub": "MS-2.2", "name": "Evaluating on Human Subjects", "cos": 3, "strength": "gap", "cps": "\u2014", "notes": "Human subject protections are outside CPS scope."}, {"fn": "MS", "sub": "MS-2.3", "name": "Ensuring Realistic Measurement", "cos": 4, "strength": "partial", "cps": "CPS 234 \u00b627", "notes": "CPS 234's risk-based testing approach partially aligns."}, {"fn": "MS", "sub": "MS-2.4", "name": "Monitoring Deployed Systems", "cos": 4, "strength": "direct", "cps": "CPS 230 \u00b616(d), CPS 234 \u00b618", "notes": "Both CPS standards require ongoing monitoring. FS AI RMF adds AI-specific monitoring (drift, performance degradation)."}, {"fn": "MS", "sub": "MS-2.5", "name": "Measuring Validity and Reliability", "cos": 3, "strength": "partial", "cps": "CPS 234 \u00b629", "notes": "CPS 234 tests control effectiveness but not AI model validity and reliability specifically."}, {"fn": "MS", "sub": "MS-2.6", "name": "Measuring Safety", "cos": 2, "strength": "partial", "cps": "CPS 230 \u00b614", "notes": "CPS 230's resilience requirements partially map to AI safety, but AI-specific safety metrics are new."}, {"fn": "MS", "sub": "MS-2.7", "name": "Measuring Security and Resiliency", "cos": 4, "strength": "direct", "cps": "CPS 234 \u00b615-18, \u00b622-23, CPS 230 \u00b633-39", "notes": "Strong alignment. CPS 234's security capability + CPS 230's business continuity map directly."}, {"fn": "MS", "sub": "MS-2.8", "name": "Measuring Accountability and Transparency", "cos": 2, "strength": "gap", "cps": "\u2014", "notes": "AI transparency and accountability metrics have no CPS equivalent."}, {"fn": "MS", "sub": "MS-2.9", "name": "Measuring Explainability", "cos": 2, "strength": "gap", "cps": "\u2014", "notes": "AI explainability and interpretability are outside CPS scope."}, {"fn": "MS", "sub": "MS-2.10", "name": "Measuring Privacy", "cos": 3, "strength": "partial", "cps": "CPS 234 \u00b621", "notes": "CPS 234 classifies information by sensitivity but doesn't address AI-specific privacy risks."}, {"fn": "MS", "sub": "MS-2.11", "name": "Measuring Nondiscrimination", "cos": 1, "strength": "gap", "cps": "\u2014", "notes": "Bias and fairness measurement outside CPS scope."}, {"fn": "MS", "sub": "MS-2.12", "name": "Measuring Resource Efficiency", "cos": 3, "strength": "gap", "cps": "\u2014", "notes": "Environmental impact of AI training outside CPS scope."}, {"fn": "MS", "sub": "MS-2.13", "name": "Measuring AI Metrics Effectiveness", "cos": 3, "strength": "partial", "cps": "CPS 230 \u00b617, CPS 234 \u00b632", "notes": "Both require periodic review of measurement effectiveness."}, {"fn": "MS", "sub": "MS-3.1", "name": "Tracking Known and Emergent Risks", "cos": 2, "strength": "direct", "cps": "CPS 230 \u00b627(a)", "notes": "CPS 230's operational risk monitoring maps well to AI risk tracking."}, {"fn": "MS", "sub": "MS-3.2", "name": "Qualitative Risk Tracking", "cos": 3, "strength": "partial", "cps": "CPS 230 \u00b627(c)", "notes": "Scenario analysis covers some qualitative risk assessment."}, {"fn": "MS", "sub": "MS-3.3", "name": "Enabling Feedback, Appeal, and Override", "cos": 2, "strength": "gap", "cps": "\u2014", "notes": "End-user feedback and appeal mechanisms outside CPS scope."}, {"fn": "MS", "sub": "MS-4.1", "name": "Feedback on Measurement Approaches", "cos": 4, "strength": "partial", "cps": "CPS 234 \u00b632", "notes": "CPS 234 requires annual review of testing but not domain expert consultation."}, {"fn": "MS", "sub": "MS-4.2", "name": "Feedback on Measurement Results", "cos": 4, "strength": "partial", "cps": "CPS 230 \u00b622", "notes": "Board-level review exists but not the broader stakeholder validation FS AI RMF requires."}, {"fn": "MS", "sub": "MS-4.3", "name": "Feedback on Real-World Performance", "cos": 3, "strength": "gap", "cps": "\u2014", "notes": "Community and field feedback on AI performance outside CPS scope."}, {"fn": "MG", "sub": "MG-1.1", "name": "Deciding to Deploy", "cos": 2, "strength": "partial", "cps": "CPS 230 \u00b626", "notes": "CPS 230 requires assessing new technology impact but doesn't have a formal deploy/no-deploy gate for AI."}, {"fn": "MG", "sub": "MG-1.2", "name": "Prioritizing Risk Responses", "cos": 2, "strength": "direct", "cps": "CPS 230 \u00b616(b)", "notes": "CPS 230's risk appetite framework supports risk prioritization."}, {"fn": "MG", "sub": "MG-1.3", "name": "Responding to High-Priority Risks", "cos": 2, "strength": "direct", "cps": "CPS 230 \u00b630", "notes": "CPS 230 explicitly requires timely remediation with clear accountabilities."}, {"fn": "MG", "sub": "MG-1.4", "name": "Managing Residual Risk", "cos": 4, "strength": "direct", "cps": "CPS 230 \u00b630", "notes": "CPS 230 requires documenting and tracking residual risk until resolution."}, {"fn": "MG", "sub": "MG-2.1", "name": "Allocating Resources", "cos": 3, "strength": "partial", "cps": "CPS 230 \u00b625", "notes": "CPS 230 requires appropriate IT resources but not AI vs non-AI alternatives analysis."}, {"fn": "MG", "sub": "MG-2.2", "name": "Ensuring Sustained Value", "cos": 3, "strength": "partial", "cps": "CPS 230 \u00b625", "notes": "CPS 230 addresses forward-looking capability but not AI-specific value sustainability."}, {"fn": "MG", "sub": "MG-2.3", "name": "Responding to Emergent Risks", "cos": 3, "strength": "direct", "cps": "CPS 230 \u00b631-32", "notes": "CPS 230's incident management maps to emergent AI risk response."}, {"fn": "MG", "sub": "MG-2.4", "name": "Decommissioning AI Systems", "cos": 3, "strength": "gap", "cps": "\u2014", "notes": "AI system decommissioning protocols not addressed in CPS standards."}, {"fn": "MG", "sub": "MG-3.1", "name": "Monitoring Third-Party Risks", "cos": 5, "strength": "direct", "cps": "CPS 230 \u00b633-46, CPS 234 \u00b616-17", "notes": "Strongest alignment. CPS 230's service provider regime is world-class."}, {"fn": "MG", "sub": "MG-3.2", "name": "Monitoring Pre-Trained Model Risks", "cos": 2, "strength": "partial", "cps": "CPS 234 \u00b616", "notes": "CPS 234 assesses third-party security capability but not AI model-specific risks."}, {"fn": "MG", "sub": "MG-4.1", "name": "Post-Deployment Risk Management", "cos": 6, "strength": "direct", "cps": "CPS 230 \u00b616(d), \u00b631, CPS 234 \u00b624-28", "notes": "Strong combined coverage from CPS 230 monitoring + CPS 234 incident management."}, {"fn": "MG", "sub": "MG-4.2", "name": "Continuously Improving AI Systems", "cos": 3, "strength": "direct", "cps": "CPS 230 \u00b617, CPS 234 \u00b628", "notes": "Both CPS standards embed continuous improvement cycles."}, {"fn": "MG", "sub": "MG-4.3", "name": "Responding to Incidents", "cos": 5, "strength": "direct", "cps": "CPS 230 \u00b631-32, CPS 234 \u00b624-28", "notes": "Very strong alignment. CPS 230's 72-hour notification + CPS 234's incident lifecycle."}], "gaps": [{"area": "AI Trustworthiness Principles", "desc": "Fairness, explainability, transparency not in CPS standards", "subs": ["GV-1.2", "GV-1.7", "MS-2.8", "MS-2.9", "MS-2.11"]}, {"area": "Human-AI Interaction", "desc": "Human oversight configs, appeal/override mechanisms", "subs": ["GV-3.2", "MP-3.5", "MS-3.3"]}, {"area": "AI System Lifecycle", "desc": "Inventory, decommissioning, deployment gates", "subs": ["GV-1.7", "MG-2.4"]}, {"area": "Stakeholder Engagement", "desc": "External feedback on AI impacts", "subs": ["GV-5.1", "GV-5.2", "MP-5.2", "MS-4.3"]}, {"area": "AI-Specific Measurement", "desc": "Bias testing, explainability metrics, environmental impact", "subs": ["MS-2.8", "MS-2.9", "MS-2.11", "MS-2.12"]}, {"area": "Workforce & Diversity", "desc": "Diverse perspectives in AI risk management", "subs": ["GV-3.1", "MP-1.2"]}, {"area": "Benefit Documentation", "desc": "CPS standards risk-focused; FS AI RMF requires documenting AI value", "subs": ["MP-3.1", "MP-3.3"]}]};
+
+// Tabs
+document.querySelectorAll('.tab').forEach(t=>{t.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('section').forEach(x=>x.classList.remove('active'));t.classList.add('active');document.getElementById(t.dataset.tab).classList.add('active')})});
+
+// Bar chart
+const fnBars=document.getElementById('fn-bars');
+DATA.functions.forEach(fn=>{
+  const ms=DATA.mappings.filter(m=>m.fn===fn.id);
+  const d=ms.filter(m=>m.strength==='direct').length;
+  const p=ms.filter(m=>m.strength==='partial').length;
+  const g=ms.filter(m=>m.strength==='gap').length;
+  const t=ms.length;
+  fnBars.innerHTML+=`<div class="bar-row"><div class="bar-label" style="color:${fn.color}">${fn.name}</div><div class="bar-track"><div class="bar-seg bar-direct" style="width:${d/t*100}%">${d}</div><div class="bar-seg bar-partial" style="width:${p/t*100}%">${p}</div><div class="bar-seg bar-gap" style="width:${g/t*100}%">${g}</div></div></div>`;
+});
+
+// Filters
+const fnSel=document.getElementById('f-fn');
+DATA.functions.forEach(fn=>{const o=document.createElement('option');o.value=fn.id;o.textContent=fn.id+' — '+fn.name;fnSel.appendChild(o)});
+
+function renderMatrix(){
+  const fn=document.getElementById('f-fn').value;
+  const str=document.getElementById('f-str').value;
+  const cps=document.getElementById('f-cps').value;
+  const q=document.getElementById('f-search').value.toLowerCase();
+  let ms=DATA.mappings;
+  if(fn) ms=ms.filter(m=>m.fn===fn);
+  if(str) ms=ms.filter(m=>m.strength===str);
+  if(cps==='230') ms=ms.filter(m=>m.cps.includes('230')&&!m.cps.includes('234'));
+  if(cps==='234') ms=ms.filter(m=>m.cps.includes('234')&&!m.cps.includes('230'));
+  if(cps==='both') ms=ms.filter(m=>m.cps.includes('230')&&m.cps.includes('234'));
+  if(q) ms=ms.filter(m=>m.name.toLowerCase().includes(q)||m.sub.toLowerCase().includes(q)||m.notes.toLowerCase().includes(q)||m.cps.toLowerCase().includes(q));
+
+  document.getElementById('matrix-count').textContent=ms.length+' of '+DATA.mappings.length+' subcategories';
+  const el=document.getElementById('matrix-rows');
+  el.innerHTML=ms.map(m=>{
+    const sc=m.strength==='direct'?'s-direct':m.strength==='partial'?'s-partial':'s-gap';
+    const sl=m.strength==='direct'?'● Direct':m.strength==='partial'?'◐ Partial':'○ Gap';
+    const refs=m.cps!=='—'?m.cps.split(',').map(r=>`<span class="cps-ref">${r.trim()}</span>`).join(''):'<span style="color:var(--dim);font-size:12px">No CPS equivalent</span>';
+    return `<div class="row" onclick="this.classList.toggle('open')"><div class="row-top"><span class="fn-badge fn-${m.fn}">${m.fn}</span><span class="sub-id">${m.sub}</span><span class="sub-name">${m.name}</span><span class="strength ${sc}">${sl}</span><span class="cos-badge">${m.cos} COs</span></div><div class="row-detail"><div class="detail-label">CPS Reference</div><div class="detail-value">${refs}</div><div class="detail-label">Analysis</div><div class="detail-value">${m.notes}</div></div></div>`;
+  }).join('');
+}
+['f-fn','f-str','f-cps'].forEach(id=>document.getElementById(id).addEventListener('change',renderMatrix));
+document.getElementById('f-search').addEventListener('input',renderMatrix);
+renderMatrix();
+
+// Gaps
+const gc=document.getElementById('gap-cards');
+DATA.gaps.forEach(g=>{
+  gc.innerHTML+=`<div class="gap-card"><h3>${g.area}</h3><p>${g.desc}</p><div class="gap-subs">${g.subs.map(s=>`<span class="gap-sub">${s}</span>`).join('')}</div></div>`;
+});
+</script>
+</body>
+</html>
